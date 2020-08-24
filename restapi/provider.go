@@ -126,7 +126,8 @@ func Provider() terraform.ResourceProvider {
 			"restapi_object": resourceRestApi(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
-			"restapi_object": dataSourceRestApi(),
+			"restapi_object":     dataSourceRestApi(),
+			"restapi_raw_object": dataSourceApiRawObject(),
 		},
 		ConfigureFunc: configureProvider,
 	}

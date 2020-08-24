@@ -220,6 +220,20 @@ func (obj *api_object) update_state(state string) error {
 	return err
 }
 
+func (obj *api_object) update_raw_state(state string) error {
+	if obj.debug {
+		log.Printf("api_object.go: Updating API object state to '%s'\n", state)
+	}
+
+	/* Store response body for parsing via jsondecode() */
+	obj.api_response = state
+
+	if obj.debug {
+		log.Printf("api_object.go: final object after synchronization of state:\n%+v\n", obj.toString())
+	}
+	return nil
+}
+
 func (obj *api_object) create_object() error {
 	/* Failsafe: The constructor should prevent this situation, but
 	   protect here also. If no id is set, and the API does not respond
@@ -291,6 +305,21 @@ func (obj *api_object) read_object() error {
 	} else {
 		err = obj.update_state(res_str)
 	}
+	return err
+}
+
+func (obj *api_object) read_raw_object() error {
+	search_path := obj.search_path
+	res_str, err := obj.api_client.send_request(obj.api_client.read_method, search_path, "")
+	if err != nil {
+		if strings.Contains(err.Error(), "Unexpected response code '404'") {
+			log.Printf("api_object.go: 404 error while refreshing state for '%s' at path '%s'. Removing from state.", obj.id, obj.get_path)
+			obj.id = ""
+			return nil
+		}
+		return err
+	}
+	err = obj.update_raw_state(res_str)
 	return err
 }
 
